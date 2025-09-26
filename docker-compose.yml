@@ -3,23 +3,35 @@ services:
   directus:
     image: directus/directus:latest
     restart: always
-    ports:
-      - "8055:8055"
     environment:
       - KEY=${KEY}
       - SECRET=${SECRET}
       - DB_CLIENT=pg
-      - DB_HOST=${DB_HOST}         # External DB host
-      - DB_PORT=${DB_PORT}         # External DB port
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
       - DB_DATABASE=${DB_DATABASE}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - PUBLIC_URL=https://${DOMAIN}
+      - PUBLIC_URL=${PUBLIC_URL}
+    ports:
+      - "8055:8055"
     networks:
-      - directsnet
-volumes:
+      - directus-net
+    depends_on:
+      - nginx
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - directus-net
 networks:
-  directsnet:
+  directus-net:
     driver: bridge
